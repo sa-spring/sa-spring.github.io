@@ -12,11 +12,412 @@
 <h2>Resposive System Design with Reactor</h2>
 </section>
 </foreignObject><foreignObject width="1280" height="720" data-marpit-advanced-background="pseudo"><section class="lead" style="" data-marpit-advanced-background="pseudo"></section></foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="2" data-background-color="#fff" data-background-image="none" data-theme="gaia" style="--background-color:#fff;--background-image:none;--theme:gaia;background-color:#fff;background-image:none;background-position:center;background-repeat:no-repeat;background-size:cover;">
-<h1>响应式架构</h1>
+<h1>回顾</h1>
+<pre><code class="language-java"><svg data-marp-fitting="svg" data-marp-fitting-code><foreignObject><span data-marp-fitting-svg-content><span data-marp-fitting-svg-content-wrap><span class="hljs-meta">@RestController</span>
+<span class="hljs-keyword">public</span> <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">HelloController</span> </span>{
+    <span class="hljs-meta">@GetMapping(&quot;/hello/{latency}&quot;)</span>
+    <span class="hljs-function"><span class="hljs-keyword">public</span> String <span class="hljs-title">hello</span><span class="hljs-params">(<span class="hljs-meta">@PathVariable</span> <span class="hljs-keyword">long</span> latency)</span> </span>{
+        <span class="hljs-keyword">try</span> {
+            TimeUnit.MILLISECONDS.sleep(latency);
+        } <span class="hljs-keyword">catch</span> (InterruptedException e) {
+            <span class="hljs-keyword">return</span> <span class="hljs-string">&quot;Error during thread sleep&quot;</span>;
+        }
+        <span class="hljs-keyword">return</span> <span class="hljs-string">&quot;Welcome to reactive world ~&quot;</span>;
+    }
+}
+</span></span></foreignObject></svg></code></pre>
 </section>
-</foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="3" data-background-color="#fff" data-background-image="none" data-theme="gaia" style="--background-color:#fff;--background-image:none;--theme:gaia;background-color:#fff;background-image:none;background-position:center;background-repeat:no-repeat;background-size:cover;"></section>
+</foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="3" data-background-color="#fff" data-background-image="none" data-theme="gaia" style="--background-color:#fff;--background-image:none;--theme:gaia;background-color:#fff;background-image:none;background-position:center;background-repeat:no-repeat;background-size:cover;">
+<h1>Another Version</h1>
+<pre><code class="language-java"><svg data-marp-fitting="svg" data-marp-fitting-code><foreignObject><span data-marp-fitting-svg-content><span data-marp-fitting-svg-content-wrap><span class="hljs-meta">@RestController</span>
+<span class="hljs-keyword">public</span> <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">HelloController</span> </span>{
+    <span class="hljs-meta">@GetMapping(&quot;/hello/{latency}&quot;)</span>
+    <span class="hljs-function"><span class="hljs-keyword">public</span> Mono&lt;String&gt; <span class="hljs-title">hello</span><span class="hljs-params">(<span class="hljs-meta">@PathVariable</span> <span class="hljs-keyword">int</span> latency)</span> </span>{
+        <span class="hljs-keyword">return</span> Mono.just(<span class="hljs-string">&quot;Welcome to reactive world ~&quot;</span>)
+        .delayElement(Duration.ofMillis(latency));
+    }
+}
+</span></span></foreignObject></svg></code></pre>
+<br />
+<div style="text-align: right;">sa-spring/spring-webflux</div>
+</section>
+</foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="4" data-background-color="#fff" data-background-image="none" data-theme="gaia" style="--background-color:#fff;--background-image:none;--theme:gaia;background-color:#fff;background-image:none;background-position:center;background-repeat:no-repeat;background-size:cover;">
+<h1>Gatling</h1>
+<pre><code class="language-scala"><svg data-marp-fitting="svg" data-marp-fitting-code><foreignObject><span data-marp-fitting-svg-content><span data-marp-fitting-svg-content-wrap><span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">LoadSimulation</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">Simulation</span> </span>{
+    <span class="hljs-keyword">val</span> baseUrl = <span class="hljs-type">System</span>.getProperty(<span class="hljs-string">&quot;base.url&quot;</span>)
+    <span class="hljs-keyword">val</span> testPath = <span class="hljs-type">System</span>.getProperty(<span class="hljs-string">&quot;test.path&quot;</span>)
+    <span class="hljs-keyword">val</span> sim_users = <span class="hljs-type">System</span>.getProperty(<span class="hljs-string">&quot;sim.users&quot;</span>).toInt
+    <span class="hljs-keyword">val</span> httpConf = http.baseUrl(baseUrl)
+      <span class="hljs-comment">// 定义模拟的请求，重复100次</span>
+    <span class="hljs-keyword">val</span> helloRequest = repeat(<span class="hljs-number">100</span>) {
+      exec(http(<span class="hljs-string">&quot;hello-with-latency&quot;</span>)
+        .get(testPath)).pause(<span class="hljs-number">0.5</span> second, <span class="hljs-number">1</span> seconds)
+    }
+      <span class="hljs-comment">// 定义模拟的场景</span>
+    <span class="hljs-keyword">val</span> scn = scenario(<span class="hljs-string">&quot;hello&quot;</span>)
+        .exec(helloRequest)
+    <span class="hljs-comment">// 配置并发用户的数量在10秒内均匀提高至sim_users指定的数量</span>
+    setUp(scn.inject(rampUsers(sim_users).during(<span class="hljs-number">10</span> seconds)).protocols(httpConf))
+}
+</span></span></foreignObject></svg></code></pre>
+</section>
+</foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section data-background-color="#fff" data-background-image="none" data-theme="gaia" style="--background-color:#fff;--background-image:none;--theme:gaia;background-color:#fff;background-image:none;background-position:center;background-repeat:no-repeat;background-size:cover;" data-marpit-advanced-background="background"><div data-marpit-advanced-background-container="true" data-marpit-advanced-background-direction="horizontal"><figure style="background-image:url(&quot;images/12-gatling-mvc.png&quot;);background-size:95%;"></figure><figure style="background-image:url(&quot;images/12-gatling-flux.png&quot;);background-size:95%;"></figure></div></section></foreignObject><foreignObject width="1280" height="720"><section id="5" data-background-color="#fff" data-background-image="none" data-theme="gaia" style="--background-color:#fff;--background-image:none;--theme:gaia;background-color:#fff;background-image:none;background-position:center;background-repeat:no-repeat;background-size:cover;" data-marpit-advanced-background="content">
+<h1>结果对比</h1>
+</section>
+</foreignObject><foreignObject width="1280" height="720" data-marpit-advanced-background="pseudo"><section style="" data-marpit-advanced-background="pseudo"></section></foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section data-background-color="#fff" data-background-image="none" data-theme="gaia" style="--background-color:#fff;--background-image:none;--theme:gaia;background-color:#fff;background-image:none;background-position:center;background-repeat:no-repeat;background-size:cover;--marpit-advanced-background-split:40%;" data-marpit-advanced-background="background" data-marpit-advanced-background-split="right"><div data-marpit-advanced-background-container="true" data-marpit-advanced-background-direction="horizontal"><figure style="background-image:url(&quot;images/12-thread-pool.png&quot;);background-size:95%;"></figure></div></section></foreignObject><foreignObject width="60%" height="720"><section id="6" data-background-color="#fff" data-background-image="none" data-theme="gaia" style="--background-color:#fff;--background-image:none;--theme:gaia;background-color:#fff;background-image:none;background-position:center;background-repeat:no-repeat;background-size:cover;--marpit-advanced-background-split:40%;" data-marpit-advanced-background="content" data-marpit-advanced-background-split="right">
+<h1>Why?</h1>
+<p>It's blocked. Use more threads and more hardware resources for better parallelism.</p>
+<pre><code class="language-java"><svg data-marp-fitting="svg" data-marp-fitting-code><foreignObject><span data-marp-fitting-svg-content><span data-marp-fitting-svg-content-wrap><span class="hljs-meta">@RestController</span>
+<span class="hljs-keyword">public</span> <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">HelloController</span> </span>{
+    <span class="hljs-meta">@GetMapping(&quot;/hello/{latency}&quot;)</span>
+    <span class="hljs-function"><span class="hljs-keyword">public</span> String <span class="hljs-title">hello</span><span class="hljs-params">(<span class="hljs-meta">@PathVariable</span> <span class="hljs-keyword">long</span> latency)</span> </span>{
+        <span class="hljs-keyword">try</span> {
+            TimeUnit.MILLISECONDS.sleep(latency);
+        } ...;
+    }
+}
+</span></span></foreignObject></svg></code></pre>
+</section>
+</foreignObject><foreignObject width="1280" height="720" data-marpit-advanced-background="pseudo"><section style="" data-marpit-advanced-background="pseudo"></section></foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section data-background-color="#fff" data-background-image="none" data-theme="gaia" style="--background-color:#fff;--background-image:none;--theme:gaia;background-color:#fff;background-image:none;background-position:center;background-repeat:no-repeat;background-size:cover;--marpit-advanced-background-split:40%;" data-marpit-advanced-background="background" data-marpit-advanced-background-split="right"><div data-marpit-advanced-background-container="true" data-marpit-advanced-background-direction="horizontal"><figure style="background-image:url(&quot;images/12-thread-pool.png&quot;);background-size:95%;"></figure></div></section></foreignObject><foreignObject width="60%" height="720"><section id="7" data-background-color="#fff" data-background-image="none" data-theme="gaia" style="--background-color:#fff;--background-image:none;--theme:gaia;background-color:#fff;background-image:none;background-position:center;background-repeat:no-repeat;background-size:cover;--marpit-advanced-background-split:40%;" data-marpit-advanced-background="content" data-marpit-advanced-background-split="right">
+<h1>Thread Pool</h1>
+<ul>
+<li>线程内存开销: 1MB/Thread</li>
+<li>线程调度开销： 5000～10000 clock cycles</li>
+</ul>
+<p>如何更高效？异步（Asynchronous）执行</p>
+</section>
+</foreignObject><foreignObject width="1280" height="720" data-marpit-advanced-background="pseudo"><section style="" data-marpit-advanced-background="pseudo"></section></foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="8" data-background-color="#fff" data-background-image="none" data-theme="gaia" style="--background-color:#fff;--background-image:none;--theme:gaia;background-color:#fff;background-image:none;background-position:center;background-repeat:no-repeat;background-size:cover;">
+<h1>Asynchronous approaches: Callback</h1>
+<p><img src="images/12-async-callback.png" alt="height:300px" style="height:300px;" /></p>
+</section>
+</foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="9" data-background-color="#fff" data-background-image="none" data-theme="gaia" style="--background-color:#fff;--background-image:none;--theme:gaia;background-color:#fff;background-image:none;background-position:center;background-repeat:no-repeat;background-size:cover;">
+<h1>Callbacks</h1>
+<pre><code class="language-java"><svg data-marp-fitting="svg" data-marp-fitting-code><foreignObject><span data-marp-fitting-svg-content><span data-marp-fitting-svg-content-wrap>userService.getFavorites(userId, <span class="hljs-keyword">new</span> Callback&lt;List&lt;String&gt;&gt;() { 
+    <span class="hljs-function"><span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title">onSuccess</span><span class="hljs-params">(List&lt;String&gt; list)</span> </span>{ 
+      <span class="hljs-keyword">if</span> (list.isEmpty()) { 
+        suggestionService.getSuggestions(<span class="hljs-keyword">new</span> Callback&lt;List&lt;Favorite&gt;&gt;() {
+          <span class="hljs-function"><span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title">onSuccess</span><span class="hljs-params">(List&lt;Favorite&gt; list)</span> </span>{ 
+            UiUtils.submitOnUiThread(() -&gt; { 
+              list.stream().limit(<span class="hljs-number">5</span>).forEach(uiList::show); 
+              });
+          }
+          <span class="hljs-function"><span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title">onError</span><span class="hljs-params">(Throwable error)</span> </span>{ 
+            UiUtils.errorPopup(error);
+          }
+        });
+      } <span class="hljs-keyword">else</span> {
+        list.stream().limit(<span class="hljs-number">5</span>).forEach(favId -&gt; favoriteService.getDetails(favId, 
+              <span class="hljs-keyword">new</span> Callback&lt;Favorite&gt;() {
+                <span class="hljs-function"><span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title">onSuccess</span><span class="hljs-params">(Favorite details)</span> </span>{
+                  UiUtils.submitOnUiThread(() -&gt; uiList.show(details));
+                }
+                <span class="hljs-function"><span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title">onError</span><span class="hljs-params">(Throwable error)</span> </span>{
+                  UiUtils.errorPopup(error);
+                }
+              }
+            ));
+      }
+    }
+    <span class="hljs-function"><span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title">onError</span><span class="hljs-params">(Throwable error)</span> </span>{
+      UiUtils.errorPopup(error);
+    }
+  });
+</span></span></foreignObject></svg></code></pre>
+</section>
+</foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="10" data-background-color="#fff" data-background-image="none" data-theme="gaia" style="--background-color:#fff;--background-image:none;--theme:gaia;background-color:#fff;background-image:none;background-position:center;background-repeat:no-repeat;background-size:cover;">
+<h1>Asynchronous approaches: Future/CompletableFuture</h1>
+<p><img src="images/12-async-future.png" alt="height:350px" style="height:350px;" /></p>
+</section>
+</foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="11" data-background-color="#fff" data-background-image="none" data-theme="gaia" style="--background-color:#fff;--background-image:none;--theme:gaia;background-color:#fff;background-image:none;background-position:center;background-repeat:no-repeat;background-size:cover;">
+<h1>Future/CompletableFuture</h1>
+<pre><code class="language-java"><svg data-marp-fitting="svg" data-marp-fitting-code><foreignObject><span data-marp-fitting-svg-content><span data-marp-fitting-svg-content-wrap>CompletableFuture&lt;List&lt;String&gt;&gt; ids = ifhIds(); 
+
+CompletableFuture&lt;List&lt;String&gt;&gt; result = ids.thenComposeAsync(l -&gt; { 
+    Stream&lt;CompletableFuture&lt;String&gt;&gt; zip =
+            l.stream().map(i -&gt; { 
+                CompletableFuture&lt;String&gt; nameTask = ifhName(i); 
+                CompletableFuture&lt;Integer&gt; statTask = ifhStat(i); 
+
+                <span class="hljs-keyword">return</span> nameTask.thenCombineAsync(statTask, (name, stat) -&gt; <span class="hljs-string">&quot;Name &quot;</span> + name + <span class="hljs-string">&quot; has stats &quot;</span> + stat); 
+            });
+    List&lt;CompletableFuture&lt;String&gt;&gt; combinationList = zip.collect(Collectors.toList()); 
+    CompletableFuture&lt;String&gt;[] combinationArray = combinationList.toArray(<span class="hljs-keyword">new</span> CompletableFuture[combinationList.size()]);
+
+    CompletableFuture&lt;Void&gt; allDone = CompletableFuture.allOf(combinationArray); 
+    <span class="hljs-keyword">return</span> allDone.thenApply(v -&gt; combinationList.stream()
+            .map(CompletableFuture::join) 
+            .collect(Collectors.toList()));
+});
+
+List&lt;String&gt; results = result.join(); 
+</span></span></foreignObject></svg></code></pre>
+</section>
+</foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section data-background-color="#fff" data-background-image="none" data-theme="gaia" style="--background-color:#fff;--background-image:none;--theme:gaia;background-color:#fff;background-image:none;background-position:center;background-repeat:no-repeat;background-size:cover;--marpit-advanced-background-split:40%;" data-marpit-advanced-background="background" data-marpit-advanced-background-split="right"><div data-marpit-advanced-background-container="true" data-marpit-advanced-background-direction="horizontal"><figure style="background-image:url(&quot;images/12-face.png&quot;);background-size:95%;"></figure></div></section></foreignObject><foreignObject width="60%" height="720"><section id="12" data-background-color="#fff" data-background-image="none" data-theme="gaia" style="--background-color:#fff;--background-image:none;--theme:gaia;background-color:#fff;background-image:none;background-position:center;background-repeat:no-repeat;background-size:cover;--marpit-advanced-background-split:40%;" data-marpit-advanced-background="content" data-marpit-advanced-background-split="right">
+<h1>Asynchronous approaches</h1>
+<p>其实都在控制数据的一步步加工处理</p>
+</section>
+</foreignObject><foreignObject width="1280" height="720" data-marpit-advanced-background="pseudo"><section style="" data-marpit-advanced-background="pseudo"></section></foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section data-background-color="#fff" data-background-image="none" data-theme="gaia" style="--background-color:#fff;--background-image:none;--theme:gaia;background-color:#fff;background-image:none;background-position:center;background-repeat:no-repeat;background-size:cover;" data-marpit-advanced-background="background"><div data-marpit-advanced-background-container="true" data-marpit-advanced-background-direction="horizontal"><figure style="background-image:url(&quot;images/12-everything-is-a-sequence.png&quot;);background-size:95%;"></figure><figure style="background-image:url(&quot;images/12-event-series.png&quot;);background-size:95%;"></figure></div></section></foreignObject><foreignObject width="1280" height="720"><section id="13" data-background-color="#fff" data-background-image="none" data-theme="gaia" style="--background-color:#fff;--background-image:none;--theme:gaia;background-color:#fff;background-image:none;background-position:center;background-repeat:no-repeat;background-size:cover;" data-marpit-advanced-background="content">
+<h1>Reactive</h1>
+
+<p><br /><br /><br /><br /><br /><br /><br /><br />
+<strong>“Reactive,” refers to programming models that are built around reacting to change.</strong></p>
+</section>
+</foreignObject><foreignObject width="1280" height="720" data-marpit-advanced-background="pseudo"><section style="" data-marpit-advanced-background="pseudo"></section></foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="14" data-background-color="#fff" data-background-image="none" data-theme="gaia" style="--background-color:#fff;--background-image:none;--theme:gaia;background-color:#fff;background-image:none;background-position:center;background-repeat:no-repeat;background-size:cover;">
+<h5>JDK9 <code>java.util.concurrent.Flow</code></h5>
+<pre><code class="language-java"><svg data-marp-fitting="svg" data-marp-fitting-code><foreignObject><span data-marp-fitting-svg-content><span data-marp-fitting-svg-content-wrap><span class="hljs-keyword">public</span> <span class="hljs-keyword">final</span> <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">Flow</span> </span>{
+    <span class="hljs-function"><span class="hljs-keyword">private</span> <span class="hljs-title">Flow</span><span class="hljs-params">()</span> </span>{}
+    <span class="hljs-meta">@FunctionalInterface</span>
+    <span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> <span class="hljs-class"><span class="hljs-keyword">interface</span> <span class="hljs-title">Publisher</span>&lt;<span class="hljs-title">T</span>&gt; </span>{
+        <span class="hljs-function"><span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title">subscribe</span><span class="hljs-params">(Subscriber&lt;? <span class="hljs-keyword">super</span> T&gt; subscriber)</span></span>;
+    }
+    <span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> <span class="hljs-class"><span class="hljs-keyword">interface</span> <span class="hljs-title">Subscriber</span>&lt;<span class="hljs-title">T</span>&gt; </span>{
+        <span class="hljs-function"><span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title">onSubscribe</span><span class="hljs-params">(Subscription subscription)</span></span>;
+        <span class="hljs-function"><span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title">onNext</span><span class="hljs-params">(T item)</span></span>;
+        <span class="hljs-function"><span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title">onError</span><span class="hljs-params">(Throwable throwable)</span></span>;
+        <span class="hljs-function"><span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title">onComplete</span><span class="hljs-params">()</span></span>;
+    }
+    <span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> <span class="hljs-class"><span class="hljs-keyword">interface</span> <span class="hljs-title">Subscription</span> </span>{
+        <span class="hljs-function"><span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title">request</span><span class="hljs-params">(<span class="hljs-keyword">long</span> n)</span></span>;
+        <span class="hljs-function"><span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title">cancel</span><span class="hljs-params">()</span></span>;
+    }
+    <span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> <span class="hljs-class"><span class="hljs-keyword">interface</span> <span class="hljs-title">Processor</span>&lt;<span class="hljs-title">T</span>,<span class="hljs-title">R</span>&gt; <span class="hljs-keyword">extends</span> <span class="hljs-title">Subscriber</span>&lt;<span class="hljs-title">T</span>&gt;, <span class="hljs-title">Publisher</span>&lt;<span class="hljs-title">R</span>&gt; </span>{}
+}
+</span></span></foreignObject></svg></code></pre>
+</section>
+</foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="15" data-background-color="#fff" data-background-image="none" data-theme="gaia" style="--background-color:#fff;--background-image:none;--theme:gaia;background-color:#fff;background-image:none;background-position:center;background-repeat:no-repeat;background-size:cover;">
+<h1>Reactive Streams</h1>
+<p><img src="images/12-stream-backpresure.png" alt="height:180px" style="height:180px;" /></p>
+<p><img src="images/12-stream-pubsub.png" alt="height:150px" style="height:150px;" /></p>
+<br />
+<div style="text-align: right; font-size: 36px">https://www.reactive-streams.org/<br />
+</section>
+</foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="16" data-background-color="#fff" data-background-image="none" data-theme="gaia" style="--background-color:#fff;--background-image:none;--theme:gaia;background-color:#fff;background-image:none;background-position:center;background-repeat:no-repeat;background-size:cover;">
+<h1>示例</h1>
+<pre><code class="language-java"><svg data-marp-fitting="svg" data-marp-fitting-code><foreignObject><span data-marp-fitting-svg-content><span data-marp-fitting-svg-content-wrap><span class="hljs-keyword">public</span> <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">PrintSubscriber</span> <span class="hljs-keyword">implements</span> <span class="hljs-title">Subscriber</span>&lt;<span class="hljs-title">Integer</span>&gt; </span>{
+    <span class="hljs-keyword">private</span> Subscription subscription;
+    <span class="hljs-meta">@Override</span>
+    <span class="hljs-function"><span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title">onSubscribe</span><span class="hljs-params">(Subscription subscription)</span> </span>{ <span class="hljs-keyword">this</span>.subscription = subscription; subscription.request(<span class="hljs-number">1</span>); }
+    <span class="hljs-meta">@Override</span>
+    <span class="hljs-function"><span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title">onNext</span><span class="hljs-params">(Integer item)</span> </span>{ System.out.println(<span class="hljs-string">&quot;Received item: &quot;</span> + item); subscription.request(<span class="hljs-number">1</span>); }
+    <span class="hljs-meta">@Override</span>
+    <span class="hljs-function"><span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title">onError</span><span class="hljs-params">(Throwable error)</span> </span>{ System.out.println(<span class="hljs-string">&quot;Error occurred: &quot;</span> + error.getMessage()); }
+    <span class="hljs-meta">@Override</span>
+    <span class="hljs-function"><span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title">onComplete</span><span class="hljs-params">()</span> </span>{ System.out.println(<span class="hljs-string">&quot;PrintSubscriber is complete&quot;</span>); }
+}
+<span class="hljs-keyword">public</span> <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">SubmissionPublisherExample</span> </span>{
+    <span class="hljs-function"><span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">void</span> <span class="hljs-title">main</span><span class="hljs-params">(String... args)</span> <span class="hljs-keyword">throws</span> InterruptedException </span>{
+        SubmissionPublisher&lt;Integer&gt; publisher = <span class="hljs-keyword">new</span> SubmissionPublisher&lt;&gt;();
+        publisher.subscribe(<span class="hljs-keyword">new</span> PrintSubscriber());
+        System.out.println(<span class="hljs-string">&quot;Submitting items...&quot;</span>);
+        <span class="hljs-keyword">for</span> (<span class="hljs-keyword">int</span> i = <span class="hljs-number">0</span>; i &lt; <span class="hljs-number">10</span>; i++) {
+            publisher.submit(i);
+        }
+        Thread.sleep(<span class="hljs-number">1000</span>);
+        publisher.close();
+    }
+}
+</span></span></foreignObject></svg></code></pre>
+</section>
+</foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section data-background-color="#fff" data-background-image="none" data-theme="gaia" style="--background-color:#fff;--background-image:none;--theme:gaia;background-color:#fff;background-image:none;background-position:center;background-repeat:no-repeat;background-size:cover;--marpit-advanced-background-split:50%;" data-marpit-advanced-background="background" data-marpit-advanced-background-split="right"><div data-marpit-advanced-background-container="true" data-marpit-advanced-background-direction="horizontal"><figure style="background-image:url(&quot;images/12-stream-backpresure.png&quot;);background-size:95%;"></figure></div></section></foreignObject><foreignObject width="50%" height="720"><section id="17" data-background-color="#fff" data-background-image="none" data-theme="gaia" style="--background-color:#fff;--background-image:none;--theme:gaia;background-color:#fff;background-image:none;background-position:center;background-repeat:no-repeat;background-size:cover;--marpit-advanced-background-split:50%;" data-marpit-advanced-background="content" data-marpit-advanced-background-split="right">
+<h1>运行</h1>
+<pre><code><svg data-marp-fitting="svg" data-marp-fitting-code><foreignObject><span data-marp-fitting-svg-content><span data-marp-fitting-svg-content-wrap>Submitting items...
+Received item: 0
+Received item: 1
+Received item: 2
+Received item: 3
+Received item: 4
+Received item: 5
+Received item: 6
+Received item: 7
+Received item: 8
+Received item: 9
+PrintSubscriber is complete
+</span></span></foreignObject></svg></code></pre>
+</section>
+</foreignObject><foreignObject width="1280" height="720" data-marpit-advanced-background="pseudo"><section style="" data-marpit-advanced-background="pseudo"></section></foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="18" data-background-color="#fff" data-background-image="none" data-theme="gaia" style="--background-color:#fff;--background-image:none;--theme:gaia;background-color:#fff;background-image:none;background-position:center;background-repeat:no-repeat;background-size:cover;">
+<h1>Back Pressure</h1>
+<p>Resistance or force opposing the desired flow of fluid through pipes.<br />
+<br /></p>
+<div style="text-align: right;">— Wikipedia</div>
+<p>背压（Back Pressure），通常是指运动流体在密闭容器中沿其路径（譬如管路或风通路）流动时，由于受到障碍物或急转弯道的阻碍而被施加的与运动方向相反的压力。</p>
+<div style="text-align: right;">— 百度</div>
+</section>
+</foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section data-background-color="#fff" data-background-image="none" data-theme="gaia" style="--background-color:#fff;--background-image:none;--theme:gaia;background-color:#fff;background-image:none;background-position:center;background-repeat:no-repeat;background-size:cover;" data-marpit-advanced-background="background"><div data-marpit-advanced-background-container="true" data-marpit-advanced-background-direction="horizontal"><figure style="background-image:url(&quot;images/12-backpressure-1.gif&quot;);background-size:95%;"></figure><figure style="background-image:url(&quot;images/12-backpressure-2.gif&quot;);background-size:95%;"></figure></div></section></foreignObject><foreignObject width="1280" height="720"><section id="19" data-background-color="#fff" data-background-image="none" data-theme="gaia" style="--background-color:#fff;--background-image:none;--theme:gaia;background-color:#fff;background-image:none;background-position:center;background-repeat:no-repeat;background-size:cover;" data-marpit-advanced-background="content">
+<h1>Back Pressure</h1>
+
+<p><br />
+<br /><br /><br /><br /><br /><br /><br />
+Backpressure is when a downstream can tell an upstream to send it fewer data in order to prevent it from being overwhelmed.</p>
+</section>
+</foreignObject><foreignObject width="1280" height="720" data-marpit-advanced-background="pseudo"><section style="" data-marpit-advanced-background="pseudo"></section></foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section data-background-color="#fff" data-background-image="none" data-theme="gaia" style="--background-color:#fff;--background-image:none;--theme:gaia;background-color:#fff;background-image:none;background-position:center;background-repeat:no-repeat;background-size:cover;--marpit-advanced-background-split:50%;" data-marpit-advanced-background="background" data-marpit-advanced-background-split="right"><div data-marpit-advanced-background-container="true" data-marpit-advanced-background-direction="horizontal"><figure style="background-image:url(&quot;images/12-gatling-mvc.png&quot;);background-size:95%;"></figure></div></section></foreignObject><foreignObject width="50%" height="720"><section id="20" data-background-color="#fff" data-background-image="none" data-theme="gaia" style="--background-color:#fff;--background-image:none;--theme:gaia;background-color:#fff;background-image:none;background-position:center;background-repeat:no-repeat;background-size:cover;--marpit-advanced-background-split:50%;" data-marpit-advanced-background="content" data-marpit-advanced-background-split="right">
+<h1>反思一下</h1>
+<p>In synchronous, blocking calls serve as a natural form of back pressure that forces the caller to wait.</p>
+<p><img src="images/12-thread-pool.png" alt="height:200px" style="height:200px;" /></p>
+</section>
+</foreignObject><foreignObject width="1280" height="720" data-marpit-advanced-background="pseudo"><section style="" data-marpit-advanced-background="pseudo"></section></foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section data-background-color="#fff" data-background-image="none" data-theme="gaia" style="--background-color:#fff;--background-image:none;--theme:gaia;background-color:#fff;background-image:none;background-position:center;background-repeat:no-repeat;background-size:cover;--marpit-advanced-background-split:70%;" data-marpit-advanced-background="background" data-marpit-advanced-background-split="right"><div data-marpit-advanced-background-container="true" data-marpit-advanced-background-direction="horizontal"><figure style="background-image:url(&quot;images/12-balance.png&quot;);background-size:90%;"></figure></div></section></foreignObject><foreignObject width="30%" height="720"><section id="21" data-background-color="#fff" data-background-image="none" data-theme="gaia" style="--background-color:#fff;--background-image:none;--theme:gaia;background-color:#fff;background-image:none;background-position:center;background-repeat:no-repeat;background-size:cover;--marpit-advanced-background-split:70%;" data-marpit-advanced-background="content" data-marpit-advanced-background-split="right">
+<h2>供需平衡</h2>
+<p><small>It becomes important to control the rate of events so that a fast producer does not overwhelm its destination.</small></p>
+</section>
+</foreignObject><foreignObject width="1280" height="720" data-marpit-advanced-background="pseudo"><section style="" data-marpit-advanced-background="pseudo"></section></foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="22" data-background-color="#fff" data-background-image="none" data-theme="gaia" style="--background-color:#fff;--background-image:none;--theme:gaia;background-color:#fff;background-image:none;background-position:center;background-repeat:no-repeat;background-size:cover;">
+<h1>回顾示例:带“背压”控制的pub-sub</h1>
+<pre><code class="language-java"><svg data-marp-fitting="svg" data-marp-fitting-code><foreignObject><span data-marp-fitting-svg-content><span data-marp-fitting-svg-content-wrap><span class="hljs-keyword">public</span> <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">PrintSubscriber</span> <span class="hljs-keyword">implements</span> <span class="hljs-title">Subscriber</span>&lt;<span class="hljs-title">Integer</span>&gt; </span>{
+    <span class="hljs-keyword">private</span> Subscription subscription;
+    <span class="hljs-meta">@Override</span>
+    <span class="hljs-function"><span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title">onSubscribe</span><span class="hljs-params">(Subscription subscription)</span> </span>{ 
+      <span class="hljs-keyword">this</span>.subscription = subscription; 
+      subscription.request(<span class="hljs-number">1</span>); 
+    }
+    <span class="hljs-meta">@Override</span>
+    <span class="hljs-function"><span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title">onNext</span><span class="hljs-params">(Integer item)</span> </span>{ 
+      System.out.println(<span class="hljs-string">&quot;Received item: &quot;</span> + item); 
+      subscription.request(<span class="hljs-number">1</span>); 
+    }
+    ...
+}
+</span></span></foreignObject></svg></code></pre>
+</section>
+</foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="23" data-background-color="#fff" data-background-image="none" data-theme="gaia" style="--background-color:#fff;--background-image:none;--theme:gaia;background-color:#fff;background-image:none;background-position:center;background-repeat:no-repeat;background-size:cover;">
+<h1>Reactive Streams Specification</h1>
+<p><img src="images/12-reactive-streams.png" alt="height:400px" style="height:400px;" /></p>
+</section>
+</foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="24" data-background-color="#fff" data-background-image="none" data-theme="gaia" style="--background-color:#fff;--background-image:none;--theme:gaia;background-color:#fff;background-image:none;background-position:center;background-repeat:no-repeat;background-size:cover;">
+<h1>Project Reactor</h1>
+<p><code>Flux</code>, an Asynchronous Sequence of 0-N Items</p>
+<p><img src="images/12-reactor-flux.png" alt="height:400px" style="height:400px;" /></p>
+</section>
+</foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="25" data-background-color="#fff" data-background-image="none" data-theme="gaia" style="--background-color:#fff;--background-image:none;--theme:gaia;background-color:#fff;background-image:none;background-position:center;background-repeat:no-repeat;background-size:cover;">
+<h1>Project Reactor</h1>
+<p><code>Mono</code>, an Asynchronous 0-1 Result</p>
+<p><img src="images/12-reactor-mono.png" alt="height:400px" style="height:400px;" /></p>
+</section>
+</foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section data-background-color="#fff" data-background-image="none" data-theme="gaia" style="--background-color:#fff;--background-image:none;--theme:gaia;background-color:#fff;background-image:none;background-position:center;background-repeat:no-repeat;background-size:cover;" data-marpit-advanced-background="background"><div data-marpit-advanced-background-container="true" data-marpit-advanced-background-direction="horizontal"><figure style="background-image:url(&quot;images/12-operator-filter.png&quot;);background-size:95%;"></figure><figure style="background-image:url(&quot;images/12-operator-map.png&quot;);background-size:95%;"></figure><figure style="background-image:url(&quot;images/12-operator-index.png&quot;);background-size:95%;"></figure><figure style="background-image:url(&quot;images/12-operator-window.png&quot;);background-size:95%;"></figure></div></section></foreignObject><foreignObject width="1280" height="720"><section id="26" data-background-color="#fff" data-background-image="none" data-theme="gaia" style="--background-color:#fff;--background-image:none;--theme:gaia;background-color:#fff;background-image:none;background-position:center;background-repeat:no-repeat;background-size:cover;" data-marpit-advanced-background="content">
+<h1>Operators</h1>
+</section>
+</foreignObject><foreignObject width="1280" height="720" data-marpit-advanced-background="pseudo"><section style="" data-marpit-advanced-background="pseudo"></section></foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section data-background-color="#fff" data-background-image="none" data-theme="gaia" style="--background-color:#fff;--background-image:none;--theme:gaia;background-color:#fff;background-image:none;background-position:center;background-repeat:no-repeat;background-size:cover;" data-marpit-advanced-background="background"><div data-marpit-advanced-background-container="true" data-marpit-advanced-background-direction="horizontal"><figure style="background-image:url(&quot;images/12-operator-buffer.png&quot;);background-size:75%;"></figure><figure style="background-image:url(&quot;images/12-operator-take.png&quot;);background-size:95%;"></figure><figure style="background-image:url(&quot;images/12-operator-zipWith.png&quot;);background-size:95%;"></figure></div></section></foreignObject><foreignObject width="1280" height="720"><section id="27" data-background-color="#fff" data-background-image="none" data-theme="gaia" style="--background-color:#fff;--background-image:none;--theme:gaia;background-color:#fff;background-image:none;background-position:center;background-repeat:no-repeat;background-size:cover;" data-marpit-advanced-background="content">
+<h1>Operators</h1>
+</section>
+</foreignObject><foreignObject width="1280" height="720" data-marpit-advanced-background="pseudo"><section style="" data-marpit-advanced-background="pseudo"></section></foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="28" data-background-color="#fff" data-background-image="none" data-theme="gaia" style="--background-color:#fff;--background-image:none;--theme:gaia;background-color:#fff;background-image:none;background-position:center;background-repeat:no-repeat;background-size:cover;">
+<h1>Reactive Programming</h1>
+<pre><code class="language-java"><svg data-marp-fitting="svg" data-marp-fitting-code><foreignObject><span data-marp-fitting-svg-content><span data-marp-fitting-svg-content-wrap>     userService.getFavorites(userId)
+                .timeout(Duration.ofMillis(<span class="hljs-number">800</span>)) 
+                .onErrorResume(cacheService.cachedFavoritesFor(userId)) 
+                .flatMap(favoriteService::getDetails) 
+                .switchIfEmpty(suggestionService.getSuggestions())
+                .take(<span class="hljs-number">5</span>)
+                .publishOn(UiUtils.uiThreadScheduler())
+                .subscribe(uiList::show, UiUtils::errorPopup);
+</span></span></foreignObject></svg></code></pre>
+</section>
+</foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="29" data-background-color="#fff" data-background-image="none" data-theme="gaia" style="--background-color:#fff;--background-image:none;--theme:gaia;background-color:#fff;background-image:none;background-position:center;background-repeat:no-repeat;background-size:cover;">
+<h1>Reactive Programming</h1>
+<pre><code class="language-java"><svg data-marp-fitting="svg" data-marp-fitting-code><foreignObject><span data-marp-fitting-svg-content><span data-marp-fitting-svg-content-wrap>Flux&lt;String&gt; ids = ifhrIds(); 
+
+Flux&lt;String&gt; combinations =
+        ids.flatMap(id -&gt; { 
+            Mono&lt;String&gt; nameTask = ifhrName(id); 
+            Mono&lt;Integer&gt; statTask = ifhrStat(id); 
+
+            <span class="hljs-keyword">return</span> nameTask.zipWith(statTask, 
+                    (name, stat) -&gt; <span class="hljs-string">&quot;Name &quot;</span> + name + <span class="hljs-string">&quot; has stats &quot;</span> + stat);
+        });
+
+Mono&lt;List&lt;String&gt;&gt; result = combinations.collectList(); 
+
+List&lt;String&gt; results = result.block();
+</span></span></foreignObject></svg></code></pre>
+</section>
+</foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="30" data-background-color="#fff" data-background-image="none" data-theme="gaia" style="--background-color:#fff;--background-image:none;--theme:gaia;background-color:#fff;background-image:none;background-position:center;background-repeat:no-repeat;background-size:cover;">
+<h1>Imperative vs. Declarative</h1>
+<p>“You know, imperative programming is like how you do something, and declarative programming is more like what you do, or something.”</p>
+<p>仅描述应该发生什么，但什么都尚未发生... 直到有人subscribe， then push (message-driven)。</p>
+<p>A message-driven architecture provides you with an asynchronous boundary that decouples you from time and space.</p>
+</section>
+</foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section data-background-color="#fff" data-background-image="none" data-theme="gaia" style="--background-color:#fff;--background-image:none;--theme:gaia;background-color:#fff;background-image:none;background-position:center;background-repeat:no-repeat;background-size:cover;--marpit-advanced-background-split:35%;" data-marpit-advanced-background="background" data-marpit-advanced-background-split="right"><div data-marpit-advanced-background-container="true" data-marpit-advanced-background-direction="horizontal"><figure style="background-image:url(&quot;images/12-spring-stacks.png&quot;);background-size:95%;"></figure></div></section></foreignObject><foreignObject width="65%" height="720"><section id="31" data-background-color="#fff" data-background-image="none" data-theme="gaia" style="--background-color:#fff;--background-image:none;--theme:gaia;background-color:#fff;background-image:none;background-position:center;background-repeat:no-repeat;background-size:cover;--marpit-advanced-background-split:35%;" data-marpit-advanced-background="content" data-marpit-advanced-background-split="right">
+<h1>Spring Web Stacks</h1>
+<ul>
+<li><small>In Spring MVC, it is assumed that applications may block the current thread and for this reason servlet containers use a large thread pool, to absorb potential blocking during request handling.</small></li>
+<li><small>In Spring WebFlux, it is assumed that applications will not block, and therefore non-blocking servers use a small, fixed-size thread pool (event loop workers) to handle requests.</small></li>
+</ul>
+</section>
+</foreignObject><foreignObject width="1280" height="720" data-marpit-advanced-background="pseudo"><section style="" data-marpit-advanced-background="pseudo"></section></foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="32" data-background-color="#fff" data-background-image="none" data-theme="gaia" style="--background-color:#fff;--background-image:none;--theme:gaia;background-color:#fff;background-image:none;background-position:center;background-repeat:no-repeat;background-size:cover;">
+<h6>Spring WebFlux - Client</h6>
+<pre><code class="language-java"><svg data-marp-fitting="svg" data-marp-fitting-code><foreignObject><span data-marp-fitting-svg-content><span data-marp-fitting-svg-content-wrap>client.get().uri(<span class="hljs-string">&quot;/employees&quot;</span>).retrieve().bodyToFlux(Employee.class).map(<span class="hljs-keyword">this</span>::doSomeSlowWork)
+          .subscribe(<span class="hljs-keyword">new</span> Subscriber&lt;Employee&gt;() {
+              <span class="hljs-keyword">private</span> Subscription subscription;
+              <span class="hljs-keyword">private</span> Integer count = <span class="hljs-number">0</span>;
+              <span class="hljs-meta">@Override</span>
+              <span class="hljs-function"><span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title">onNext</span><span class="hljs-params">(Employee t)</span> </span>{
+                  count++;
+                  <span class="hljs-keyword">if</span> (count &gt;= <span class="hljs-number">2</span>) {
+                      count = <span class="hljs-number">0</span>;
+                      subscription.request(<span class="hljs-number">2</span>); System.out.println(<span class="hljs-string">&quot;Client requested 2 &quot;</span>);
+                  }
+                  System.out.println(<span class="hljs-string">&quot;Client subscribes: &quot;</span> + t);
+              }
+              <span class="hljs-meta">@Override</span>
+              <span class="hljs-function"><span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title">onSubscribe</span><span class="hljs-params">(Subscription subscription)</span> </span>{
+                  <span class="hljs-keyword">this</span>.subscription = subscription;
+                  subscription.request(<span class="hljs-number">2</span>); System.out.println(<span class="hljs-string">&quot;Client requested 2 &quot;</span>);
+              }
+              ...
+          });
+</span></span></foreignObject></svg></code></pre>
+</section>
+</foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="33" data-background-color="#fff" data-background-image="none" data-theme="gaia" style="--background-color:#fff;--background-image:none;--theme:gaia;background-color:#fff;background-image:none;background-position:center;background-repeat:no-repeat;background-size:cover;">
+<h1>WebFlux - Server</h1>
+<p>A data repository (acting as Publisher) can produce data that an HTTP server (acting as Subscriber) can then write to the response. The main purpose of Reactive Streams is to let the subscriber control how quickly or how slowly the publisher produces data.</p>
+<pre><code class="language-java"><svg data-marp-fitting="svg" data-marp-fitting-code><foreignObject><span data-marp-fitting-svg-content><span data-marp-fitting-svg-content-wrap>    <span class="hljs-meta">@GetMapping(produces = MediaType.APPLICATION_STREAM_JSON_VALUE)</span>
+    <span class="hljs-function"><span class="hljs-keyword">private</span> Flux&lt;Employee&gt; <span class="hljs-title">getAllEmployees</span><span class="hljs-params">()</span> </span>{
+        <span class="hljs-keyword">return</span> employeeRepository.findAllEmployees()
+                                .delayElements(Duration.ofMillis(<span class="hljs-number">100</span>))
+                                .doOnNext(employee -&gt; System.out.println(<span class="hljs-string">&quot;Server produces:&quot;</span> + employee));
+    }
+</span></span></foreignObject></svg></code></pre>
+<div style="text-align: right;">sa-spring/employee-reactive</div>
+</section>
+</foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="34" data-background-color="#fff" data-background-image="none" data-theme="gaia" style="--background-color:#fff;--background-image:none;--theme:gaia;background-color:#fff;background-image:none;background-position:center;background-repeat:no-repeat;background-size:cover;">
+<h1>R2DBC</h1>
+<p>The Reactive Relational Database Connectivity (R2DBC) project brings reactive programming APIs to relational databases.</p>
+<br />
+<div style="text-align: right;">https://r2dbc.io/</div>
+</section>
+</foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="35" data-background-color="#fff" data-background-image="none" data-theme="gaia" style="--background-color:#fff;--background-image:none;--theme:gaia;background-color:#fff;background-image:none;background-position:center;background-repeat:no-repeat;background-size:cover;">
+<h1>The Reactive Manifesto</h1>
+<p>Organizations working in disparate domains are independently discovering patterns for building software that look the same. These systems are more robust, more resilient, more flexible and better positioned to meet <strong>modern demands</strong>.</p>
+<br />
+<div style="text-align: right; font-size: 36px">https://www.reactivemanifesto.org/</div>
+</section>
+</foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="36" data-background-color="#fff" data-background-image="none" data-theme="gaia" style="--background-color:#fff;--background-image:none;--theme:gaia;background-color:#fff;background-image:none;background-position:center;background-repeat:no-repeat;background-size:cover;">
+<h1>The Reactive Manifesto -2</h1>
+<p>These changes are happening because application requirements have changed dramatically in recent years. Only a few years ago a large application had tens of servers, seconds of response time, hours of offline maintenance and gigabytes of data. Today applications are deployed on everything from mobile devices to cloud-based clusters <strong>running thousands of multi-core processors</strong>. Users expect <strong>millisecond response times</strong> and <strong>100% uptime</strong>. Data is measured in <strong>Petabytes</strong>. Today's demands are simply not met by yesterday’s software architectures.</p>
+</section>
+</foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="37" data-background-color="#fff" data-background-image="none" data-theme="gaia" style="--background-color:#fff;--background-image:none;--theme:gaia;background-color:#fff;background-image:none;background-position:center;background-repeat:no-repeat;background-size:cover;">
+<h1>The Reactive Manifesto -3</h1>
+<p>We believe that <strong>a coherent approach to systems architecture is needed</strong>, and we believe that all necessary aspects are already recognized individually: we want systems that are <strong>Responsive, Resilient, Elastic and Message Driven</strong>. We call these <big><strong>Reactive Systems</strong></big>.</p>
+</section>
+</foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section data-background-color="#fff" data-background-image="none" data-theme="gaia" style="--background-color:#fff;--background-image:none;--theme:gaia;background-color:#fff;background-image:none;background-position:center;background-repeat:no-repeat;background-size:cover;--marpit-advanced-background-split:40%;" data-marpit-advanced-background="background" data-marpit-advanced-background-split="right"><div data-marpit-advanced-background-container="true" data-marpit-advanced-background-direction="horizontal"><figure style="background-image:url(&quot;images/12-reactive-systems.png&quot;);background-size:contain;"></figure></div></section></foreignObject><foreignObject width="60%" height="720"><section id="38" data-background-color="#fff" data-background-image="none" data-theme="gaia" style="--background-color:#fff;--background-image:none;--theme:gaia;background-color:#fff;background-image:none;background-position:center;background-repeat:no-repeat;background-size:cover;--marpit-advanced-background-split:40%;" data-marpit-advanced-background="content" data-marpit-advanced-background-split="right">
+<h1>Reactive System</h1>
+<p><small>Systems built as Reactive Systems are more flexible, loosely-coupled and scalable. This makes them easier to develop and amenable to change. They are significantly more tolerant of failure and when failure does occur they meet it with elegance rather than disaster. Reactive Systems are highly responsive, giving users effective interactive feedback.</small></p>
+</section>
+</foreignObject><foreignObject width="1280" height="720" data-marpit-advanced-background="pseudo"><section style="" data-marpit-advanced-background="pseudo"></section></foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="39" data-background-color="#fff" data-background-image="none" data-theme="gaia" style="--background-color:#fff;--background-image:none;--theme:gaia;background-color:#fff;background-image:none;background-position:center;background-repeat:no-repeat;background-size:cover;">
+<h1>Elastic</h1>
+<p><small>The system stays responsive under varying workload. Reactive Systems can react to changes in the input rate by increasing or decreasing the resources allocated to service these inputs. This implies designs that have no contention points or central bottlenecks, resulting in the ability to shard or replicate components and distribute inputs among them. Reactive Systems support predictive, as well as Reactive, scaling algorithms by providing relevant live performance measures. They achieve elasticity in a cost-effective way on commodity hardware and software platforms.</small></p>
+</section>
+</foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="40" data-background-color="#fff" data-background-image="none" data-theme="gaia" style="--background-color:#fff;--background-image:none;--theme:gaia;background-color:#fff;background-image:none;background-position:center;background-repeat:no-repeat;background-size:cover;">
+<h1>Message Driven</h1>
+<p><small>Reactive Systems rely on asynchronous message-passing to establish a boundary between components that ensures loose coupling, isolation and location transparency. This boundary also provides the means to delegate failures as messages. Employing explicit message-passing enables load management, elasticity, and flow control by shaping and monitoring the message queues in the system and applying back-pressure when necessary. Location transparent messaging as a means of communication makes it possible for the management of failure to work with the same constructs and semantics across a cluster or within a single host. Non-blocking communication allows recipients to only consume resources while active, leading to less system overhead.</small></p>
+</section>
+</foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="41" data-background-color="#fff" data-background-image="none" data-theme="gaia" style="--background-color:#fff;--background-image:none;--theme:gaia;background-color:#fff;background-image:none;background-position:center;background-repeat:no-repeat;background-size:cover;">
+<h1>Resilient</h1>
+<p><small>The system stays responsive in the face of failure. This applies not only to highly-available, mission-critical systems — any system that is not resilient will be unresponsive after a failure. Resilience is achieved by replication, containment, isolation and delegation. Failures are contained within each component, isolating components from each other and thereby ensuring that parts of the system can fail and recover without compromising the system as a whole. Recovery of each component is delegated to another (external) component and high-availability is ensured by replication where necessary. The client of a component is not burdened with handling its failures.</small></p>
+</section>
+</foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="42" data-background-color="#fff" data-background-image="none" data-theme="gaia" style="--background-color:#fff;--background-image:none;--theme:gaia;background-color:#fff;background-image:none;background-position:center;background-repeat:no-repeat;background-size:cover;">
+<h1>Responsive</h1>
+<p><small>The system responds in a timely manner if at all possible. Responsiveness is the cornerstone of usability and utility, but more than that, responsiveness means that problems may be detected quickly and dealt with effectively. Responsive systems focus on providing rapid and consistent response times, establishing reliable upper bounds so they deliver a consistent quality of service. This consistent behavior in turn simplifies error handling, builds end user confidence, and encourages further interaction.</small></p>
+</section>
+</foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section data-background-color="#fff" data-background-image="none" data-theme="gaia" style="--background-color:#fff;--background-image:none;--theme:gaia;background-color:#fff;background-image:none;background-position:center;background-repeat:no-repeat;background-size:cover;" data-marpit-advanced-background="background"><div data-marpit-advanced-background-container="true" data-marpit-advanced-background-direction="horizontal"><figure style="background-image:url(&quot;images/happy.png&quot;);background-size:50% auto;"></figure></div></section></foreignObject><foreignObject width="1280" height="720"><section id="43" data-background-color="#fff" data-background-image="none" data-theme="gaia" style="--background-color:#fff;--background-image:none;--theme:gaia;background-color:#fff;background-image:none;background-position:center;background-repeat:no-repeat;background-size:cover;" data-marpit-advanced-background="content"></section>
 <script>!function(){"use strict";const t="marpitSVGPolyfill:setZoomFactor,",e=Symbol();let r,o;function n(n){const i="object"==typeof n&&n.target||document,a="object"==typeof n?n.zoom:n;window[e]||(Object.defineProperty(window,e,{configurable:!0,value:!0}),window.addEventListener("message",(({data:e,origin:r})=>{if(r===window.origin)try{if(e&&"string"==typeof e&&e.startsWith(t)){const[,t]=e.split(","),r=Number.parseFloat(t);Number.isNaN(r)||(o=r)}}catch(t){console.error(t)}})));let l=!1;Array.from(i.querySelectorAll("svg[data-marpit-svg]"),(t=>{var e,n,i,s;t.style.transform||(t.style.transform="translateZ(0)");const c=a||o||t.currentScale||1;r!==c&&(r=c,l=c);const d=t.getBoundingClientRect(),{length:u}=t.children;for(let r=0;r<u;r+=1){const o=t.children[r],a=o.getScreenCTM();if(a){const t=null!==(n=null===(e=o.x)||void 0===e?void 0:e.baseVal.value)&&void 0!==n?n:0,r=null!==(s=null===(i=o.y)||void 0===i?void 0:i.baseVal.value)&&void 0!==s?s:0,l=o.firstChild,{style:u}=l;u.transformOrigin||(u.transformOrigin=`${-t}px ${-r}px`),u.transform=`scale(${c}) matrix(${a.a}, ${a.b}, ${a.c}, ${a.d}, ${a.e-d.left}, ${a.f-d.top}) translateZ(0.0001px)`}}})),!1!==l&&Array.from(i.querySelectorAll("iframe"),(({contentWindow:e})=>{null==e||e.postMessage(`${t}${l}`,"null"===window.origin?"*":window.origin)}))}r=1,o=void 0;const i=(t,e,r)=>{if(t.getAttribute(e)!==r)return t.setAttribute(e,r),!0};function a({once:t=!1,target:e=document}={}){const r="Apple Computer, Inc."===navigator.vendor?[n]:[];let o=!t;const a=()=>{for(const t of r)t({target:e});!function(t=document){Array.from(t.querySelectorAll('svg[data-marp-fitting="svg"]'),(t=>{var e;const r=t.firstChild,o=r.firstChild,{scrollWidth:n,scrollHeight:a}=o;let l,s=1;if(t.hasAttribute("data-marp-fitting-code")&&(l=null===(e=t.parentElement)||void 0===e?void 0:e.parentElement),t.hasAttribute("data-marp-fitting-math")&&(l=t.parentElement),l){const t=getComputedStyle(l),e=Math.ceil(l.clientWidth-parseFloat(t.paddingLeft||"0")-parseFloat(t.paddingRight||"0"));e&&(s=e)}const c=Math.max(n,s),d=Math.max(a,1),u=`0 0 ${c} ${d}`;i(r,"width",`${c}`),i(r,"height",`${d}`),i(t,"preserveAspectRatio",getComputedStyle(t).getPropertyValue("--preserve-aspect-ratio")||"xMinYMin meet"),i(t,"viewBox",u)&&t.classList.toggle("__reflow__")}))}(e),o&&window.requestAnimationFrame(a)};return a(),()=>{o=!1}}const l=Symbol(),s=document.currentScript;((t=document)=>{if("undefined"==typeof window)throw new Error("Marp Core's browser script is valid only in browser context.");if(t[l])return t[l];const e=a({target:t}),r=()=>{e(),delete t[l]};Object.defineProperty(t,l,{configurable:!0,value:r})})(s?s.getRootNode():document)}();
-</script></foreignObject></svg></div><script>!function(){"use strict";var e=function(e,t){var n,r=1===(e.parent||e).nodeType?e.parent||e:document.querySelector(e.parent||e),s=[].filter.call("string"==typeof e.slides?r.querySelectorAll(e.slides):e.slides||r.children,(function(e){return"SCRIPT"!==e.nodeName})),a={},i=function(e,t){return(t=t||{}).index=s.indexOf(e),t.slide=e,t},o=function(e,t){a[e]=(a[e]||[]).filter((function(e){return e!==t}))},l=function(e,t){return(a[e]||[]).reduce((function(e,n){return e&&!1!==n(t)}),!0)},c=function(e,t){s[e]&&(n&&l("deactivate",i(n,t)),n=s[e],l("activate",i(n,t)))},d=function(e,t){var r=s.indexOf(n)+e;l(e>0?"next":"prev",i(n,t))&&c(r,t)},u={off:o,on:function(e,t){return(a[e]||(a[e]=[])).push(t),o.bind(null,e,t)},fire:l,slide:function(e,t){if(!arguments.length)return s.indexOf(n);l("slide",i(s[e],t))&&c(e,t)},next:d.bind(null,1),prev:d.bind(null,-1),parent:r,slides:s,destroy:function(e){l("destroy",i(n,e)),a={}}};return(t||[]).forEach((function(e){e(u)})),n||c(0),u};function t(e){e.parent.classList.add("bespoke-marp-parent"),e.slides.forEach((e=>e.classList.add("bespoke-marp-slide"))),e.on("activate",(t=>{const n=t.slide,r=!n.classList.contains("bespoke-marp-active");e.slides.forEach((e=>{e.classList.remove("bespoke-marp-active"),e.setAttribute("aria-hidden","true")})),n.classList.add("bespoke-marp-active"),n.removeAttribute("aria-hidden"),r&&(n.classList.add("bespoke-marp-active-ready"),document.body.clientHeight,n.classList.remove("bespoke-marp-active-ready"))}))}function n(e){let t=0,n=0;Object.defineProperty(e,"fragments",{enumerable:!0,value:e.slides.map((e=>[null,...e.querySelectorAll("[data-marpit-fragment]")]))});const r=r=>void 0!==e.fragments[t][n+r],s=(r,s)=>{t=r,n=s,e.fragments.forEach(((e,t)=>{e.forEach(((e,n)=>{if(null==e)return;const a=t<r||t===r&&n<=s;e.setAttribute("data-bespoke-marp-fragment",a?"active":"inactive"),t===r&&n===s?e.setAttribute("data-bespoke-marp-current-fragment","current"):e.removeAttribute("data-bespoke-marp-current-fragment")}))})),e.fragmentIndex=s;const a={slide:e.slides[r],index:r,fragments:e.fragments[r],fragmentIndex:s};e.fire("fragment",a)};e.on("next",(({fragment:a=!0})=>{if(a){if(r(1))return s(t,n+1),!1;const a=t+1;e.fragments[a]&&s(a,0)}else{const r=e.fragments[t].length;if(n+1<r)return s(t,r-1),!1;const a=e.fragments[t+1];a&&s(t+1,a.length-1)}})),e.on("prev",(({fragment:a=!0})=>{if(r(-1)&&a)return s(t,n-1),!1;const i=t-1;e.fragments[i]&&s(i,e.fragments[i].length-1)})),e.on("slide",(({index:t,fragment:n})=>{let r=0;if(void 0!==n){const s=e.fragments[t];if(s){const{length:e}=s;r=-1===n?e-1:Math.min(Math.max(n,0),e-1)}}s(t,r)})),s(0,0)}
+</script></foreignObject><foreignObject width="1280" height="720" data-marpit-advanced-background="pseudo"><section style="" data-marpit-advanced-background="pseudo"></section></foreignObject></svg></div><script>!function(){"use strict";var e=function(e,t){var n,r=1===(e.parent||e).nodeType?e.parent||e:document.querySelector(e.parent||e),s=[].filter.call("string"==typeof e.slides?r.querySelectorAll(e.slides):e.slides||r.children,(function(e){return"SCRIPT"!==e.nodeName})),a={},i=function(e,t){return(t=t||{}).index=s.indexOf(e),t.slide=e,t},o=function(e,t){a[e]=(a[e]||[]).filter((function(e){return e!==t}))},l=function(e,t){return(a[e]||[]).reduce((function(e,n){return e&&!1!==n(t)}),!0)},c=function(e,t){s[e]&&(n&&l("deactivate",i(n,t)),n=s[e],l("activate",i(n,t)))},d=function(e,t){var r=s.indexOf(n)+e;l(e>0?"next":"prev",i(n,t))&&c(r,t)},u={off:o,on:function(e,t){return(a[e]||(a[e]=[])).push(t),o.bind(null,e,t)},fire:l,slide:function(e,t){if(!arguments.length)return s.indexOf(n);l("slide",i(s[e],t))&&c(e,t)},next:d.bind(null,1),prev:d.bind(null,-1),parent:r,slides:s,destroy:function(e){l("destroy",i(n,e)),a={}}};return(t||[]).forEach((function(e){e(u)})),n||c(0),u};function t(e){e.parent.classList.add("bespoke-marp-parent"),e.slides.forEach((e=>e.classList.add("bespoke-marp-slide"))),e.on("activate",(t=>{const n=t.slide,r=!n.classList.contains("bespoke-marp-active");e.slides.forEach((e=>{e.classList.remove("bespoke-marp-active"),e.setAttribute("aria-hidden","true")})),n.classList.add("bespoke-marp-active"),n.removeAttribute("aria-hidden"),r&&(n.classList.add("bespoke-marp-active-ready"),document.body.clientHeight,n.classList.remove("bespoke-marp-active-ready"))}))}function n(e){let t=0,n=0;Object.defineProperty(e,"fragments",{enumerable:!0,value:e.slides.map((e=>[null,...e.querySelectorAll("[data-marpit-fragment]")]))});const r=r=>void 0!==e.fragments[t][n+r],s=(r,s)=>{t=r,n=s,e.fragments.forEach(((e,t)=>{e.forEach(((e,n)=>{if(null==e)return;const a=t<r||t===r&&n<=s;e.setAttribute("data-bespoke-marp-fragment",a?"active":"inactive"),t===r&&n===s?e.setAttribute("data-bespoke-marp-current-fragment","current"):e.removeAttribute("data-bespoke-marp-current-fragment")}))})),e.fragmentIndex=s;const a={slide:e.slides[r],index:r,fragments:e.fragments[r],fragmentIndex:s};e.fire("fragment",a)};e.on("next",(({fragment:a=!0})=>{if(a){if(r(1))return s(t,n+1),!1;const a=t+1;e.fragments[a]&&s(a,0)}else{const r=e.fragments[t].length;if(n+1<r)return s(t,r-1),!1;const a=e.fragments[t+1];a&&s(t+1,a.length-1)}})),e.on("prev",(({fragment:a=!0})=>{if(r(-1)&&a)return s(t,n-1),!1;const i=t-1;e.fragments[i]&&s(i,e.fragments[i].length-1)})),e.on("slide",(({index:t,fragment:n})=>{let r=0;if(void 0!==n){const s=e.fragments[t];if(s){const{length:e}=s;r=-1===n?e-1:Math.min(Math.max(n,0),e-1)}}s(t,r)})),s(0,0)}
 /*!
 * screenfull
 * v5.0.2 - 2020-02-13

@@ -182,8 +182,9 @@
 </section>
 </foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="24" data-background-color="#fff" data-background-image="none" data-theme="gaia" style="--background-color:#fff;--background-image:none;--theme:gaia;background-color:#fff;background-image:none;background-position:center;background-repeat:no-repeat;background-size:cover;">
 <h1>Creating a Batch Service</h1>
-<p>spring-guides/gs-batch-processing</p>
-<p><img src="images/09-batch-service.png" alt="height:350px" style="height:350px;" /></p>
+<p><small><small><a href="https://www.bilibili.com/video/BV1gK411j7hv?p=2">https://www.bilibili.com/video/BV1gK411j7hv?p=2</a> 5:40</small></small></p>
+<div style="text-align: right;font-size: 24px">spring-guides/gs-batch-processing</div>
+<p><img src="images/09-batch-service.png" alt="height:300px" style="height:300px;" /></p>
 <br />
 <div style="text-align: right;font-size: 24px">https://spring.io/guides/gs/batch-processing/</div>
 </section>
@@ -414,32 +415,23 @@ java.lang.Exception - <span class="hljs-keyword">if</span> there are errors.
 <h1>Split Flow</h1>
 <pre><code class="language-java"><svg data-marp-fitting="svg" data-marp-fitting-code><foreignObject><span data-marp-fitting-svg-content><span data-marp-fitting-svg-content-wrap>    <span class="hljs-meta">@Bean</span>
     <span class="hljs-function"><span class="hljs-keyword">public</span> Job <span class="hljs-title">parallelStepsJob</span><span class="hljs-params">()</span> </span>{
-
-        Flow masterFlow = <span class="hljs-keyword">new</span> FlowBuilder&lt;Flow&gt;(<span class="hljs-string">&quot;masterFlow&quot;</span>)
-                                .start(taskletStep(<span class="hljs-string">&quot;step1&quot;</span>))
+        Flow masterFlow = <span class="hljs-keyword">new</span> FlowBuilder&lt;Flow&gt;(<span class="hljs-string">&quot;masterFlow&quot;</span>).start(taskletStep(<span class="hljs-string">&quot;step1&quot;</span>))
                                 .build();
-
-        Flow flowJob2 = <span class="hljs-keyword">new</span> FlowBuilder&lt;Flow&gt;(<span class="hljs-string">&quot;flow2&quot;</span>)
-                                .start(taskletStep(<span class="hljs-string">&quot;step2&quot;</span>))
+        Flow flowJob2 = <span class="hljs-keyword">new</span> FlowBuilder&lt;Flow&gt;(<span class="hljs-string">&quot;flow2&quot;</span>).start(taskletStep(<span class="hljs-string">&quot;step2&quot;</span>))
                                 .build();
-        Flow flowJob3 = <span class="hljs-keyword">new</span> FlowBuilder&lt;Flow&gt;(<span class="hljs-string">&quot;flow3&quot;</span>)
-                                .start(taskletStep(<span class="hljs-string">&quot;step3&quot;</span>))
+        Flow flowJob3 = <span class="hljs-keyword">new</span> FlowBuilder&lt;Flow&gt;(<span class="hljs-string">&quot;flow3&quot;</span>).start(taskletStep(<span class="hljs-string">&quot;step3&quot;</span>))
                                 .build();
-        Flow flowJob4 = <span class="hljs-keyword">new</span> FlowBuilder&lt;Flow&gt;(<span class="hljs-string">&quot;flow4&quot;</span>)
-                                .start(taskletStep(<span class="hljs-string">&quot;step4&quot;</span>))
+        Flow flowJob4 = <span class="hljs-keyword">new</span> FlowBuilder&lt;Flow&gt;(<span class="hljs-string">&quot;flow4&quot;</span>).start(taskletStep(<span class="hljs-string">&quot;step4&quot;</span>))
                                 .build();
-
-        Flow slaveFlow = <span class="hljs-keyword">new</span> FlowBuilder&lt;Flow&gt;(<span class="hljs-string">&quot;splitflow&quot;</span>)
-                                .split(<span class="hljs-keyword">new</span> SimpleAsyncTaskExecutor())
+        Flow slaveFlow = <span class="hljs-keyword">new</span> FlowBuilder&lt;Flow&gt;(<span class="hljs-string">&quot;splitflow&quot;</span>).split(<span class="hljs-keyword">new</span> SimpleAsyncTaskExecutor())
                                 .add(flowJob2, flowJob3, flowJob4).build();
-
-        <span class="hljs-keyword">return</span> (jobBuilderFactory.get(<span class="hljs-string">&quot;splitFlowJob&quot;</span>)
-                                    .incrementer(<span class="hljs-keyword">new</span> RunIdIncrementer())
+        <span class="hljs-keyword">return</span> (jobBuilderFactory.get(<span class="hljs-string">&quot;splitFlowJob&quot;</span>).incrementer(<span class="hljs-keyword">new</span> RunIdIncrementer())
                                     .start(masterFlow)
                 .next(slaveFlow).build()).build();
-
     }
 </span></span></foreignObject></svg></code></pre>
+<p><small><small><a href="https://www.bilibili.com/video/BV1gK411j7hv?p=3">https://www.bilibili.com/video/BV1gK411j7hv?p=3</a> 7:25</small></small></p>
+<p>sa-spring/spring-batch-split</p>
 </section>
 </foreignObject><foreignObject width="1280" height="720" data-marpit-advanced-background="pseudo"><section style="" data-marpit-advanced-background="pseudo"></section></foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="38" data-background-color="#fff" data-background-image="none" data-theme="gaia" style="--background-color:#fff;--background-image:none;--theme:gaia;background-color:#fff;background-image:none;background-position:center;background-repeat:no-repeat;background-size:cover;">
 <h1>Scaling and Parallel Processing</h1>
@@ -451,6 +443,7 @@ java.lang.Exception - <span class="hljs-keyword">if</span> there are errors.
 </ul>
 <br />
 <div style="text-align: right;font-size: 24px">https://docs.spring.io/spring-batch/docs/current/reference/html/scalability.html</div>
+<p><a href="https://www.bilibili.com/video/BV1gK411j7hv?p=4">https://www.bilibili.com/video/BV1gK411j7hv?p=4</a> 1:10</p>
 </section>
 </foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="39" data-background-color="#fff" data-background-image="none" data-theme="gaia" style="--background-color:#fff;--background-image:none;--theme:gaia;background-color:#fff;background-image:none;background-position:center;background-repeat:no-repeat;background-size:cover;">
 <h1>Multi-threaded Step</h1>
@@ -520,7 +513,7 @@ Supports limiting concurrent threads through the "concurrencyLimit" bean propert
         <span class="hljs-keyword">return</span> stepBuilderFactory.get(<span class="hljs-string">&quot;slaveStep&quot;</span>).&lt;Map&lt;String, String&gt;, Map&lt;String, String&gt;&gt;chunk(<span class="hljs-number">1</span>).reader(reader(<span class="hljs-keyword">null</span>)).writer(writer()).build();
     }
 </span></span></foreignObject></svg></code></pre>
-<br />
+<p><small><small><a href="https://www.bilibili.com/video/BV1gK411j7hv?p=4">https://www.bilibili.com/video/BV1gK411j7hv?p=4</a> 13:00</small></small></p>
 <div style="text-align: right;">sa-spring/spring-batch-partition</right>
 </section>
 </foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section data-background-color="#fff" data-background-image="none" data-theme="gaia" style="--background-color:#fff;--background-image:none;--theme:gaia;background-color:#fff;background-image:none;background-position:center;background-repeat:no-repeat;background-size:cover;" data-marpit-advanced-background="background"><div data-marpit-advanced-background-container="true" data-marpit-advanced-background-direction="horizontal"><figure style="background-image:url(&quot;images/happy.png&quot;);background-size:50% auto;"></figure></div></section></foreignObject><foreignObject width="1280" height="720"><section id="44" data-background-color="#fff" data-background-image="none" data-theme="gaia" style="--background-color:#fff;--background-image:none;--theme:gaia;background-color:#fff;background-image:none;background-position:center;background-repeat:no-repeat;background-size:cover;" data-marpit-advanced-background="content"></section>
